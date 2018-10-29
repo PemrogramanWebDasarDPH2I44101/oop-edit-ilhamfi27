@@ -4,42 +4,80 @@ class Kalkulator{
 
     public function Kalkulator(){
         $servername = "localhost";
-        $username   = "admin";
-        $password   = "1234";
-        $db         = "WebDasar";       
+        $username   = "root";
+        $password   = "";
+        $db         = "ilham_webdas_ewaw";       
         $this->conn = mysqli_connect($servername, $username, 
                            $password, $db);                        
     }    
 
+    public function db_connection(){
+        return $this->conn;
+    }
+
     public function tambah(){
-        $angka1 = $_POST['input1'];
-        $angka2 = $_POST['input2'];
-        $sql    = "INSERT INTO siswa(nama, nim) 
-                    VALUES ('$angka1','$angka2')";
-        mysqli_query($this->conn, $sql);        
+        $nim = $_POST['nim'];
+        $nama = $_POST['nama'];
+        $kelas = $_POST['kelas'];
+        $sql    = "INSERT INTO siswa(nim, nama, kelas) 
+                    VALUES ('$nim','$nama','$kelas')";
+        $result = mysqli_query($this->conn, $sql);
+        if ($result) {
+            header('location: data.php');
+        }     
     }    
-    public function kurang(){        
-        $angka1 = $_POST['input1'];
-        $angka2 = $_POST['input2'];
-        $sql    = "DELETE FROM siswa WHERE nim=$angka2";        
-        mysqli_query($this->conn, $sql);
+    public function kurang($id){        
+        $id = $_GET['id'];
+        $sql    = "DELETE FROM siswa WHERE id='$id'";        
+        $result = mysqli_query($this->conn, $sql);
+        if ($result) {
+            header('location: data.php');
+        }     
     }
-    public function bagi(){
-        $sql    = "SELECT * FROM siswa";        
+    public function bagi($id = null){
+        if (isset($id)) {
+            $sql    = "SELECT * FROM siswa WHERE id='$id'";
+        } else {
+            $sql    = "SELECT * FROM siswa";
+        }
         return mysqli_query($this->conn, $sql);
-
+    }
+    public function update($id,$nim,$nama,$kelas){
+        $sql ="UPDATE `siswa` 
+                SET `nim`='$nim',
+                    `nama`='$nama',
+                    `kelas`='$kelas' 
+                WHERE id='$id'";
+        $result = mysqli_query($this->conn, $sql);
+        if ($result) {
+            header('location: data.php');
+        }     
     }
 }
-$operasi = $_POST["operasi"];
 $kalkulator = new Kalkulator();
-if($operasi == "+")
-    $kalkulator->tambah();
-if($operasi == "-")
-    $kalkulator->kurang();
-if($operasi == "/"){
-    $result = $kalkulator->bagi();
-    require_once("data.php");
+if (isset($_POST["operasi"])) {
+    $operasi = $_POST["operasi"];
+    if($operasi == "+")
+        $kalkulator->tambah();
+    if($operasi == "-")
+        $kalkulator->kurang();
+    if($operasi == "/"){
+        header("location: data.php");
+    }
 }
-    
-
+if(isset($_GET['update'])){
+    if ($_GET['update'] == 'true') {
+        $id = $_POST['id'];
+        $nim = $_POST['nim'];
+        $nama = $_POST['nama'];
+        $kelas = $_POST['kelas'];
+        $kalkulator->update($id,$nim,$nama,$kelas);
+    }
+}
+if(isset($_GET['delete'])){
+    if ($_GET['delete'] == 'true') {
+        $id = $_GET['id'];
+        $kalkulator->kurang($id);
+    }
+}
 ?>
